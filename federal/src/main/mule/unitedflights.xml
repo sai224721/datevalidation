@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="b447f69f-1301-429a-95f7-4409160fc44b" >
+		<http:request-connection host="mu.mulesoft-training.com" port="80" />
+	</http:request-config>
+	<flow name="unitedflightsFlow" doc:id="42a08ee7-ae6d-4100-a368-04d12639a1d3" >
+		<http:listener doc:name="Listener" doc:id="72f80574-e5ae-4dee-a272-7f825facc989" config-ref="HTTP_Listener_config" path="/unitedflights"/>
+		<logger level="INFO" doc:name="Logger" doc:id="00ec5840-9810-431f-8604-b73122ea2bb8" message="unitedflights loading......."/>
+		<logger level="INFO" doc:name="Logger" doc:id="0ca3a04a-249c-43bc-85d9-a9e2e9e917b4" message="#[attributes.queryParams.destination]"/>
+		<http:request method="GET" doc:name="Request" doc:id="9a0a796d-8197-48ac-b483-00fe7f8fc8a0" config-ref="HTTP_Request_configuration1" path="#['/essentials/united/flights/' ++ attributes.queryParams.destination]"/>
+		<ee:transform doc:name="Transform Message" doc:id="c2de7f1c-d160-4699-b9d2-bd40d090eef3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

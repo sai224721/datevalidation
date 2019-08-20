@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="delta" format="json">
+      <types:shape format="weave" example="examples/delta.json"><![CDATA[%dw 2.0
+type delta = Array<{|
+  airlineName: String, 
+  code: String, 
+  departureDate: String, 
+  destination: String, 
+  emptySeats: String, 
+  origin: String, 
+  planeType: String, 
+  price: String
+|}> {"MetadataFormat": "json",
+"example": "[{\"airlineName\":\"Delta\",\"code\":\"A1B3D4\",\"departureDate\":\"2015\/02\/12\",\"destination\":\"PDX\",\"emptySeats\":\"10\",\"origin\":\"MUA\",\"planeType\":\"Boing 777\",\"price\":\"385.0\"}]"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#0f13c964-0a76-420b-8225-c7bda840ac45"/>
+  <types:enrichment select="#7ff1b8c2-d18d-4818-8acf-aa4f6010b610">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="delta"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

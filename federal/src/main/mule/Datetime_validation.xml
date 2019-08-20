@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:sockets="http://www.mulesoft.org/schema/mule/sockets"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/sockets http://www.mulesoft.org/schema/mule/sockets/current/mule-sockets.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="ffc21456-e9ac-4719-bd4a-158a496b1af6" >
+		<http:listener-connection host="0.0.0.0" port="8083" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="f7bdfd40-8a13-4237-95b2-8de4bdd774d3" >
+		<http:request-connection protocol="HTTPS" host="www.federalreserve.gov">
+			<http:authentication >
+				<http:basic-authentication username="federal" password="data" />
+			</http:authentication>
+			<http:client-socket-properties >
+				<sockets:tcp-client-socket-properties />
+			</http:client-socket-properties>
+		</http:request-connection>
+	</http:request-config>
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="f67b3ee7-2039-4bdd-9ab5-f81287fdb0d2" />
+	<flow name="federalFlow" doc:id="762133fa-b6d0-49ce-b73a-0f363e18f954" >
+		<http:listener doc:name="Listener" doc:id="28806a9b-9f64-4687-b871-724ce524dd45" config-ref="HTTP_Listener_config" path="/federal"/>
+		<logger level="INFO" doc:name="Logger" doc:id="2673c243-bd8c-424a-bace-442cae69d5bd" message="flow started......!"/>
+		<ee:transform doc:name="Transform Message" doc:id="0f13c964-0a76-420b-8225-c7bda840ac45" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="datetime" ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<validation:is-time doc:name="DateTime Validator" doc:id="c1d9235d-33ae-49d4-a3f5-c1d83bf2fbd7" config-ref="Validation_Config" time="#[vars.datetime]" pattern="yyyy-MM-dd'T'HH:mm:ss"/>
+		<logger level="INFO" doc:name="Logger" doc:id="27d48dee-2461-4ad3-931a-3cf37fd0ee68" message="#[vars.datetime]"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="5e74725e-586e-45b0-ade0-81e2ab8b2e68" >
+				<set-payload value="{	&quot;error&quot;: &quot;Time Format&quot;,
+	&quot;message&quot;:&quot;datetime format is incorrect&quot;,
+	&quot;expected&quot;:	&quot;yyyy-MM-dd'T'HH:mm:ss&quot;
+}" doc:name="Set Payload" doc:id="26b29029-7d9c-44f8-a98f-5a53528ebb40" mimeType="application/json"/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>
